@@ -149,9 +149,7 @@ print("=" * 40)
 
 print(f"{accuracy*100:.2f}%")
 
-# ==============================
-# Save Pipeline
-# ==============================
+
 
 joblib.dump(pipeline, "../model/model.pkl")
 

@@ -66,7 +66,7 @@ function PredictionForm({ options, setResult }) {
       className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-lg"
     >
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Team 1 */}
+     
         <div>
           <label className={labelClass}>Team 1</label>
 
@@ -87,7 +87,7 @@ function PredictionForm({ options, setResult }) {
           </select>
         </div>
 
-        {/* Team 2 */}
+   
 
         <div>
           <label className={labelClass}>Team 2</label>
@@ -109,7 +109,6 @@ function PredictionForm({ options, setResult }) {
           </select>
         </div>
 
-        {/* City */}
 
         <div>
           <label className={labelClass}>City</label>
@@ -131,7 +130,7 @@ function PredictionForm({ options, setResult }) {
           </select>
         </div>
 
-        {/* Venue */}
+    
 
         <div>
           <label className={labelClass}>Venue</label>
@@ -153,7 +152,6 @@ function PredictionForm({ options, setResult }) {
           </select>
         </div>
 
-        {/* Toss Winner */}
 
         <div>
           <label className={labelClass}>Toss Winner</label>
@@ -175,7 +173,7 @@ function PredictionForm({ options, setResult }) {
           </select>
         </div>
 
-        {/* Toss Decision */}
+       
 
         <div>
           <label className={labelClass}>Toss Decision</label>

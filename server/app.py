@@ -2,23 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import joblib
+from pathlib import Path
+import os
+
 
 app = Flask(__name__)
 CORS(app)
 
-# ==========================
-# Load Model
-# ==========================
+BASE_DIR = Path(__file__).resolve().parent
 
-model = joblib.load("../model/model.pkl")
 
-# ==========================
-# Load Dataset
-# ==========================
 
-df = pd.read_csv("../dataset/matches.csv")
+model = joblib.load(BASE_DIR.parent / "model" / "model.pkl")
 
-# Keep required columns
+
+df = pd.read_csv(BASE_DIR.parent / "dataset" / "matches.csv")
+
+
+
 df = df[
     [
         "team1",
@@ -31,11 +32,12 @@ df = df[
     ]
 ]
 
-# Clean dataset
+
 df.dropna(inplace=True)
 
 df = df[df["winner"] != "No Result"]
 df = df[df["winner"] != "Tie"]
+
 
 team_replacements = {
     "Delhi Daredevils": "Delhi Capitals",
@@ -45,6 +47,7 @@ team_replacements = {
 }
 
 df.replace(team_replacements, inplace=True)
+
 
 removed_teams = [
     "Deccan Chargers",
@@ -59,71 +62,90 @@ for team in removed_teams:
     df = df[df["team2"] != team]
     df = df[df["winner"] != team]
 
-# ==========================
-# Home
-# ==========================
+
 
 @app.route("/")
 def home():
-    return "IPL Winner Predictor API Running"
+    return jsonify(
+        {
+            "message": "IPL Winner Predictor API Running",
+            "status": "success",
+        }
+    )
 
 
-# ==========================
-# Dropdown Options
-# ==========================
 
-@app.route("/options")
+@app.route("/options", methods=["GET"])
 def options():
 
     teams = sorted(df["team1"].unique().tolist())
-
-    cities = sorted(df["city"].unique().tolist())
-
-    venues = sorted(df["venue"].unique().tolist())
-
+    cities = sorted(df["city"].dropna().unique().tolist())
+    venues = sorted(df["venue"].dropna().unique().tolist())
     toss_decision = sorted(df["toss_decision"].unique().tolist())
 
-    return jsonify({
-        "teams": teams,
-        "cities": cities,
-        "venues": venues,
-        "toss_decision": toss_decision
-    })
+    return jsonify(
+        {
+            "teams": teams,
+            "cities": cities,
+            "venues": venues,
+            "toss_decision": toss_decision,
+        }
+    )
 
-
-# ==========================
-# Prediction
-# ==========================
 
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    data = request.get_json()
+    try:
 
-    input_df = pd.DataFrame([{
-        "team1": data["team1"],
-        "team2": data["team2"],
-        "city": data["city"],
-        "venue": data["venue"],
-        "toss_winner": data["toss_winner"],
-        "toss_decision": data["toss_decision"]
-    }])
+        data = request.get_json()
 
-    winner = model.predict(input_df)[0]
+        input_df = pd.DataFrame(
+            [
+                {
+                    "team1": data["team1"],
+                    "team2": data["team2"],
+                    "city": data["city"],
+                    "venue": data["venue"],
+                    "toss_winner": data["toss_winner"],
+                    "toss_decision": data["toss_decision"],
+                }
+            ]
+        )
 
-    probabilities = model.predict_proba(input_df)[0]
+        winner = model.predict(input_df)[0]
 
-    probability = round(max(probabilities) * 100, 2)
+        probability = round(
+            max(model.predict_proba(input_df)[0]) * 100,
+            2,
+        )
 
-    return jsonify({
-        "winner": winner,
-        "probability": probability
-    })
+        return jsonify(
+            {
+                "winner": winner,
+                "probability": probability,
+            }
+        )
+
+    except Exception as e:
+
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                }
+            ),
+            500,
+        )
 
 
-# ==========================
-# Run
-# ==========================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False,
+    )
