@@ -1,0 +1,20 @@
+# Python
+server/venv/
+__pycache__/
+*.pyc
+
+# ML Models (optional - see note below)
+# model/
+
+# Node
+client/node_modules/
+
+# Environment
+.env
+
+# Vite
+client/dist/
+
+# OS
+.DS_Store
+Thumbs.db
